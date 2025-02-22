@@ -24,7 +24,7 @@ const DentistSchema = new mongoose.Schema(
   }
 );
 
-DentistSchema.virtual(`booking`, {
+DentistSchema.virtual(`bookings`, {
   ref: `Booking`,
   localField: `_id`,
   foreignField: `dentist`,

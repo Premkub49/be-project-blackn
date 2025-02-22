@@ -1,6 +1,6 @@
-const Hospital = require("../models/Hospital.js");
-const Appointment = require("../models/Appointment.js");
-exports.getHospitals = async (req, res, next) => {
+const Dentist = require("../models/Dentist.js");
+const Booking = require("../models/Booking.js");
+exports.getDentists = async (req, res, next) => {
   let query;
   const reqQuery = { ...req.query };
   const removeFields = ["select", "sort", "page", "limit"];
@@ -11,7 +11,7 @@ exports.getHospitals = async (req, res, next) => {
     /\b(gt|gte|lt|lte|in)\b/g,
     (match) => `$${match}`
   );
-  query = Hospital.find(JSON.parse(queryStr)).populate(`appointments`);
+  query = Dentist.find(JSON.parse(queryStr)).populate(`bookings`);
   if (req.query.select) {
     const fields = req.query.select.split(",").join(" ");
     query = query.select(fields);
@@ -27,9 +27,9 @@ exports.getHospitals = async (req, res, next) => {
   const limit = parseInt(req.query.limit, 10) || 25;
   const startIndex = (page - 1) * limit;
   const endIndex = page * limit;
-  const total = await Hospital.countDocuments();
+  const total = await Dentist.countDocuments();
   query = query.skip(startIndex).limit(limit);
-  const hospitals = await query;
+  const dentists = await query;
   const pagination = {};
   if (endIndex < total) {
     pagination.next = {
@@ -45,59 +45,57 @@ exports.getHospitals = async (req, res, next) => {
   }
   res.status(200).json({
     success: true,
-    count: hospitals.length,
+    count: dentists.length,
     pagination,
-    data: hospitals,
+    data: dentists,
   });
 };
-exports.getHospital = async (req, res, next) => {
+exports.getDentist = async (req, res, next) => {
   try {
-    const hospital = await Hospital.findById(req.params.id);
+    const dentist = await Dentist.findById(req.params.id);
 
-    if (!hospital) {
+    if (!dentist) {
       return res.status(400).json({ success: false });
     }
 
-    res.status(200).json({ success: true, data: hospital });
+    res.status(200).json({ success: true, data: dentist });
   } catch (err) {
     res.status(400).json({ success: false });
   }
 };
-exports.createHospital = async (req, res, next) => {
-  const hospital = await Hospital.create(req.body);
-  res.status(201).json({ success: true, data: hospital });
+exports.createDentist = async (req, res, next) => {
+  const dentist = await Dentist.create(req.body);
+  res.status(201).json({ success: true, data: dentist });
 };
 
-exports.updateHospital = async (req, res, next) => {
+exports.updateDentist = async (req, res, next) => {
   try {
-    const hospital = await Hospital.findByIdAndUpdate(req.params.id, req.body, {
+    const dentist = await Dentist.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
 
-    if (!hospital) {
+    if (!dentist) {
       return res.status(400).json({ success: false });
     }
-    res.status(200).json({ success: true, data: hospital });
+    res.status(200).json({ success: true, data: dentist });
   } catch (err) {
     res.status(400).json({ success: false });
   }
 };
 
-exports.deleteHospital = async (req, res, next) => {
+exports.deleteDentist = async (req, res, next) => {
   try {
-    const hospital = await Hospital.findById(req.params.id);
+    const dentist = await Dentist.findById(req.params.id);
 
-    if (!hospital) {
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message: `Hospital not found with id of ${req.params.id}`,
-        });
+    if (!dentist) {
+      return res.status(404).json({
+        success: false,
+        message: `Dentist not found with id of ${req.params.id}`,
+      });
     }
-    await Appointment.deleteMany({ hospital: req.params.id });
-    await Hospital.deleteOne({ _id: req.params.id });
+    await Booking.deleteMany({ dentist: req.params.id });
+    await Dentist.deleteOne({ _id: req.params.id });
     res.status(200).json({ success: true, data: {} });
   } catch (err) {
     res.status(400).json({ success: false });
