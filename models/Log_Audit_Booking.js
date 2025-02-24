@@ -13,7 +13,7 @@ const Log_Audit_BookingSchema = new mongoose.Schema({
   },
   actionType: {
     type: String,
-    enum: ["edit", "delete"],
+    enum: ["create","edit", "delete", "error_input"],
     required: true,
   },
   createdAt: {
