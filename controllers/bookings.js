@@ -1,5 +1,7 @@
 const Booking = require("../models/Booking");
 const Dentist = require("../models/Dentist");
+const LogAuditBooking = require("../models/Log_Audit_Booking");
+
 exports.getBookings = async (req, res, next) => {
   let query;
   if (req.user.role !== "admin") {
@@ -74,13 +76,22 @@ exports.addBooking = async (req, res, next) => {
     }
     req.body.user = req.user.id;
     const existedBooking = await Booking.find({ user: req.user.id });
-    if (existedBooking.length >= 3 && req.user.role !== "admin") {
+    if (existedBooking.length >= 1 && req.user.role !== "admin") {
       return res.status(400).json({
         success: false,
-        message: `The user with ID ${req.user.id} has already made 3 bookings`,
+        message: `The user with ID ${req.user.id} has already made booking`,
       });
     }
     const booking = await Booking.create(req.body);
+
+    // Create Log Audit Booking
+    const logAuditBooking = await LogAuditBooking.create({
+      user: req.user.id,
+      booking: booking._id,
+      actionType: "create",
+    });
+    console.log("Add new booking\n", logAuditBooking);
+
     res.status(200).json({
       success: true,
       data: booking,
@@ -115,6 +126,15 @@ exports.updateBooking = async (req, res, next) => {
       new: true,
       runValidators: true,
     });
+
+    // Create Log Audit Booking
+    const logAuditBooking = await LogAuditBooking.create({
+      user: req.user.id,
+      booking: booking._id,
+      actionType: "edit",
+    });
+    console.log("Update booking\n", logAuditBooking);
+
     res.status(200).json({
       success: true,
       data: booking,
