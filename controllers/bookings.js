@@ -163,6 +163,15 @@ exports.deleteBooking = async (req, res, next) => {
       });
     }
     await booking.deleteOne();
+
+    // Create Log Audit Booking
+    const logAuditBooking = await LogAuditBooking.create({
+      user: req.user.id,
+      booking: booking._id,
+      actionType: "delete",
+    });
+    console.log("Delete booking\n", logAuditBooking);
+
     res.status(200).json({
       success: true,
       date: {},
