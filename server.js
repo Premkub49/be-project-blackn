@@ -5,6 +5,7 @@ const dentists = require("./routes/dentists");
 const bookings = require("./routes/bookings");
 const auth = require("./routes/auth");
 const connectDB = require("./config/db");
+const mongoSanitize = require("express-mongo-sanitize");
 dotenv.config({ path: "./config/config.env" });
 connectDB();
 
