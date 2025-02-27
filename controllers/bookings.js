@@ -4,30 +4,32 @@ const LogAuditBooking = require("../models/Log_Audit_Booking");
 
 exports.getBookings = async (req, res, next) => {
   let query;
+  let populateDentist = {
+    path: "dentist",
+    select: "name year_of_experience area_of_expertise",
+  };
+  let populateUser = {
+    path: "user",
+    select: "name email tel role",
+  };
   if (req.user.role !== "admin") {
-    query = Booking.find({ user: req.user.id }).populate({
-      path: "dentist",
-      select: "name year_of_experience area_of_expertise",
-    });
+    query = await Booking.find({ user: req.user.id }).populate(populateDentist);
   } else {
     if (req.params.dentistId) {
       console.log(req.params.dentistId);
-      query = Booking.find({ dentist: req.params.dentistId });
+      query = await Booking.find({ dentist: req.params.dentistId })
+        .populate(populateDentist)
+        .populate(populateUser);
     } else {
       if (req.query.user) {
-        query = Booking.find({ user: req.query.user });
+        query = await Booking.find({ user: req.query.user })
+          .populate(populateDentist)
+          .populate(populateUser);
       } else {
-        query = Booking.find();
+        query = await Booking.find()
+          .populate(populateDentist)
+          .populate(populateUser);
       }
-      query = query
-        .populate({
-          path: "dentist",
-          select: "name year_of_experience area_of_expertise",
-        })
-        .populate({
-          path: "user",
-          select: "name email tel role",
-        });
     }
   }
   try {
