@@ -66,12 +66,14 @@ exports.getBooking = async (req, res, next) => {
 
 exports.addBooking = async (req, res, next) => {
   try {
-    req.body.dentist = req.params.dentistId;
-    const dentist = await Dentist.findById(req.params.dentistId);
+    if (req.params.dentistId !== undefined) {
+      req.body.dentist = req.params.dentistId;
+    }
+    const dentist = await Dentist.findById(req.body.dentist);
     if (!dentist) {
       return res.status(404).json({
         success: false,
-        message: `No dentist with the id of ${req.params.dentistId}`,
+        message: `No dentist with the id of ${req.body.dentist}`,
       });
     }
     req.body.user = req.user.id;
