@@ -4,23 +4,32 @@ const LogAuditBooking = require("../models/Log_Audit_Booking");
 
 exports.getBookings = async (req, res, next) => {
   let query;
+  let populateDentist = {
+    path: "dentist",
+    select: "name year_of_experience area_of_expertise",
+  };
+  let populateUser = {
+    path: "user",
+    select: "name email tel role",
+  };
   if (req.user.role !== "admin") {
-    query = Booking.find({ user: req.user.id }).populate({
-      path: "dentist",
-      select: "name province tel",
-    });
+    query = await Booking.find({ user: req.user.id }).populate(populateDentist);
   } else {
     if (req.params.dentistId) {
       console.log(req.params.dentistId);
-      query = Booking.find({ dentist: req.params.dentistId }).populate({
-        path: "dentist",
-        select: "name province tel",
-      });
+      query = await Booking.find({ dentist: req.params.dentistId })
+        .populate(populateDentist)
+        .populate(populateUser);
     } else {
-      query = Booking.find().populate({
-        path: "dentist",
-        select: "name province tel",
-      });
+      if (req.query.user) {
+        query = await Booking.find({ user: req.query.user })
+          .populate(populateDentist)
+          .populate(populateUser);
+      } else {
+        query = await Booking.find()
+          .populate(populateDentist)
+          .populate(populateUser);
+      }
     }
   }
   try {
@@ -43,7 +52,7 @@ exports.getBooking = async (req, res, next) => {
   try {
     const booking = await Booking.findById(req.params.id).populate({
       path: "dentist",
-      select: "name province tel",
+      select: "name year_of_experience area_of_expertise",
     });
     if (!booking) {
       return res.status(404).json({
