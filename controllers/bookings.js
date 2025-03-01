@@ -173,8 +173,7 @@ exports.deleteBooking = async (req, res, next) => {
         message: `User ${req.user.id} is not authorized to delete this booking`,
       });
     }
-    await booking.deleteOne();
-
+    
     // Create Log Audit Booking
     const logAuditBooking = await LogAuditBooking.create({
       user: req.user.id,
@@ -182,6 +181,8 @@ exports.deleteBooking = async (req, res, next) => {
       actionType: "delete",
     });
     console.log("Delete booking\n", logAuditBooking);
+
+    await booking.deleteOne();
 
     res.status(200).json({
       success: true,
