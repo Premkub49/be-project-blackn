@@ -57,7 +57,7 @@ exports.deleteLog = async (req, res, next) => {
         message: `No log with the id of ${req.params.id}`,
       });
     }
-    log.remove();
+    await log.deleteOne();
     res.status(200).json({
       success: true,
       data: {},
