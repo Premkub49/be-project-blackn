@@ -1,0 +1,44 @@
+@startuml Delete Dentist
+title Delete Dentist Sequence Diagram
+
+actor Admin
+participant "<<JavaScript>>\nServer" as Server
+participant "<<router>>\nDentists" as RouterDentists
+participant "<<controllers>>\nDentists" as ControllerDentists
+participant "<<model>>\nDentist" as DentistModel
+participant "<<model>>\nBooking" as BookingModel
+database "<<MongoDB>>\nDentists" as DB_Dentists
+database "<<MongoDB>>\nBookings" as DB_Bookings
+
+Admin -> Server : DELETE /api/v1/dentists/:id
+Server -> RouterDentists : app.use('/api/v1/dentists:id')
+RouterDentists -> ControllerDentists : deleteDentist(req, res)
+
+ControllerDentists -> DentistModel : findById(req.params.id)
+DentistModel -> DB_Dentists : Query dentist by ID
+DB_Dentists -> DentistModel : Return dentist object (or null)
+DentistModel -> ControllerDentists : Return dentist object
+
+alt Dentist not found
+    ControllerDentists -> Server : Return 404 { success: false, message: "Dentist not found" }
+    Server -> Admin : Response 404 { success: false, message: "Dentist not found" }
+end
+    ControllerDentists -> BookingModel : deleteMany({ dentist: req.params.id })
+    BookingModel -> DB_Bookings : Delete all bookings linked to dentist
+    DB_Bookings -> BookingModel : Bookings deleted
+
+    ControllerDentists -> DentistModel : deleteOne({ _id: req.params.id })
+    DentistModel -> DB_Dentists : Delete dentist from database
+    DB_Dentists -> DentistModel : Dentist deleted
+
+' note right of ControllerDentists: If an exception occurs,\nsend a 400 response { success: false }
+alt Exception occurs
+    ControllerDentists -> Server : Return 400 { success: false }
+    Server -> Admin : Response 400 { success: false }
+end
+
+    ControllerDentists -> Server : Return 200 { success: true, data: {} }
+    Server -> Admin : Response 200 { success: true, data: {} }
+
+
+@enduml
