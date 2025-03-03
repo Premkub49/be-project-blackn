@@ -1,0 +1,31 @@
+@startuml Get Me
+title Get Authenticated User (GET /api/v1/auth/me)
+
+actor User
+participant "<<JavaScript>>\nServer" as Server
+participant "<<router>>\nAuth" as RouterAuth
+participant "<<middleware>>\nAuthMiddleware" as AuthMiddleware
+participant "<<controllers>>\nAuth" as ControllerAuth
+participant "<<model>>\nUser" as UserModel
+database "<<MongoDB>>\nUsers" as DB_Users
+
+User -> Server : GET /api/v1/auth/me
+Server -> RouterAuth : app.use('/api/v1/auth/me')
+RouterAuth -> AuthMiddleware : protect(req, res, next)
+
+AuthMiddleware -> UserModel : findById(req.user.id)
+UserModel -> DB_Users : Query user by ID
+DB_Users -> UserModel : Return user object
+UserModel -> AuthMiddleware : Return user object
+AuthMiddleware -> RouterAuth : next()
+
+RouterAuth -> ControllerAuth : getMe(req, res)
+ControllerAuth -> UserModel : findById(req.user.id)
+UserModel -> DB_Users : Query user by ID
+DB_Users -> UserModel : Return user object
+UserModel -> ControllerAuth : Return user object
+
+ControllerAuth -> Server : Return 200 { success: true, data: user }
+Server -> User : Response 200 { success: true, data: user }
+
+@enduml
