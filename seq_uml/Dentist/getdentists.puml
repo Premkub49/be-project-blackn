@@ -1,0 +1,26 @@
+@startuml Get all Dentists
+title Manage Dentists (GET ALL)
+
+actor User
+actor Admin
+participant "<<JavaScript>>\nServer" as Server
+participant "<<router>>\nDentists" as RouterDentists
+participant "<<controllers>>\nDentists" as ControllerDentists
+participant "<<model>>\nDentist" as DentistModel
+database "<<MongoDB>>\nDentists" as DB_Dentists
+
+User -> Server : req.get('/api/v1/dentists')
+Admin -> Server : req.get('/api/v1/dentists')
+Server -> RouterDentists : app.use('/api/v1/dentists')
+RouterDentists -> ControllerDentists : getDentists()
+
+ControllerDentists -> DentistModel : find(JSON.parse(JSON.stringify(req.query))).populate("bookings")
+DentistModel -> DB_Dentists : Query database with filters
+DB_Dentists -> DentistModel : Return matching dentists
+DentistModel -> ControllerDentists : Return dentist list
+
+ControllerDentists -> Server : return response
+Server -> User : Response
+Server -> Admin : Response
+
+@enduml
