@@ -1,0 +1,33 @@
+@startuml Get Single Log
+title Get Single Log Sequence Diagram
+
+actor Admin
+participant "<<JavaScript>>\nServer" as Server
+participant "<<router>>\nLog_Audit_Booking" as RouterLogs
+participant "<<controllers>>\nLog_Audit_Booking" as ControllerLogs
+participant "<<model>>\nLog_Audit_Booking" as LogModel
+database "<<MongoDB>>\nLog_Audit_Booking" as DB_Logs
+
+Admin -> Server : GET /api/v1/logs/:id
+Server -> RouterLogs : app.use('/api/v1/:id')
+RouterLogs -> ControllerLogs : getLog(req, res)
+
+ControllerLogs -> LogModel : findById(req.params.id)
+LogModel -> DB_Logs : Query log by ID
+DB_Logs -> LogModel : Return log object (or null)
+LogModel -> ControllerLogs : Return log object
+
+alt Log found
+    ControllerLogs -> Server : Return 200 { success: true, data: log }
+    Server -> Admin : Response 200 { success: true, data: log }
+else Log not found
+    ControllerLogs -> Server : Return 404 { success: false, message: "No log with the given ID" }
+    Server -> Admin : Response 404 { success: false, message: "No log with the given ID" }
+end
+
+alt Exception occurs
+    ControllerLogs -> Server : Return 500 { success: false, message: "Cannot find log" }
+    Server -> Admin : Response 500 { success: false, message: "Cannot find log" }
+end
+
+@enduml
