@@ -1,0 +1,41 @@
+@startuml Get all Bookings
+title Manage Booking (GET ALL)
+
+actor User
+actor Admin
+
+participant "<<JavaScript>>\n:server" as S
+participant "<<router>>\n:bookings" as R
+participant "<<controllers>>\n:bookings" as C
+participant "<<model>>\n:Booking" as M
+database "<<MongoDB>>\n:bookings" as DB
+
+User -> S: GET /api/v1/bookings
+Admin -> S: GET /api/v1/bookings
+
+S -> R: req.get('/api/v1/bookings')
+R -> C: getBookings()
+
+alt User is not Admin
+    C -> M: Booking.find({ user: req.user.id }).populate("dentist")
+else Admin provides dentistId
+    C -> M: Booking.find({ dentist: req.params.dentistId }).populate("dentist")
+else Admin fetches all bookings
+    C -> M: Booking.find().populate("dentist")
+end
+
+M -> DB: Query Bookings
+DB --> M: Return Booking Data
+M --> C: Booking Data
+
+alt Query Successful
+    C --> S: Return JSON Response (bookings)
+    S --> User: response
+    S --> Admin: response
+else Query Fails
+    C --> S: Return 500 Error ("Cannot find Booking")
+    S --> User: error response
+    S --> Admin: error response
+end
+
+@enduml
