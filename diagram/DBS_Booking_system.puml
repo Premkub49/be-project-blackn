@@ -1,0 +1,34 @@
+@startuml DBS_Booking_system Use Case Diagram
+left to right direction
+actor "User" as user
+actor "Admin" as admin
+rectangle "DBS Booking System" as dbs{
+        usecase "Get all of user booking" as getallUserBooking
+        usecase "Get a user's booking" as getUserBooking
+        usecase "Create new user's booking" as createUserBooking
+        usecase "Update user's booking" as updateUserBooking
+        usecase "Delete user's booking" as deleteUserBooking
+
+        usecase "Get all booking" as getallBooking
+        usecase "Get a booking by id" as getBooking
+        usecase "Create new booking" as createBooking
+        usecase "Update booking" as updateBooking
+        usecase "Delete booking" as deleteBooking
+}
+
+getallUserBooking -[hidden]- getallBooking
+getUserBooking -[hidden]-> getBooking
+createUserBooking -[hidden]-> createBooking
+updateUserBooking -[hidden]-> updateBooking
+deleteUserBooking -[hidden]-> deleteBooking
+user -- getallUserBooking
+user -- getUserBooking
+user -- createUserBooking
+user -- updateUserBooking
+user -- deleteUserBooking
+getallBooking -- admin
+getBooking -- admin
+createBooking -- admin
+updateBooking -- admin
+deleteBooking -- admin
+@enduml
