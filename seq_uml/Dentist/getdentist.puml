@@ -1,0 +1,32 @@
+@startuml Get Dentist
+title Manage Dentist (GET SINGLE)
+
+actor User
+actor Admin
+participant "<<JavaScript>>\nServer" as Server
+participant "<<router>>\nDentists" as RouterDentists
+participant "<<controllers>>\nDentists" as ControllerDentists
+participant "<<model>>\nDentist" as DentistModel
+database "<<MongoDB>>\nDentists" as DB_Dentists
+
+User -> Server : req.get('/api/v1/dentists/:id')
+Admin -> Server : req.get('/api/v1/dentists/:id')
+Server -> RouterDentists : app.use('/api/v1/dentists/:id')
+RouterDentists -> ControllerDentists : getDentist(req, res)
+
+ControllerDentists -> DentistModel : findById(req.params.id)
+DentistModel -> DB_Dentists : Query dentist by ID
+DB_Dentists -> DentistModel : Return dentist data
+DentistModel -> ControllerDentists : Return dentist object
+
+alt Dentist found
+    ControllerDentists -> Server : Return success response (200, dentist)
+    Server -> User : Response (200, dentist)
+    Server -> Admin : Response (200, dentist)
+else Dentist not found
+    ControllerDentists -> Server : Return error response (400, success: false)
+    Server -> User : Response (400, success: false)
+    Server -> Admin : Response (400, success: false)
+end
+
+@enduml
