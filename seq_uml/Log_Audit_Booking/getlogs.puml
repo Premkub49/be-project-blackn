@@ -1,0 +1,35 @@
+@startuml Get all Logs
+title Get Logs Sequence Diagram
+
+actor Admin
+participant "<<JavaScript>>\nServer" as Server
+participant "<<router>>\nLog_Audit_Booking" as RouterLogs
+participant "<<controllers>>\nLog_Audit_Booking" as ControllerLogs
+participant "<<model>>\nLog_Audit_Booking" as LogModel
+database "<<MongoDB>>\nLog_Audit_Booking" as DB_Logs
+
+Admin -> Server : GET /api/v1/logs
+Server -> RouterLogs : app.use('/api/v1/logs')
+RouterLogs -> ControllerLogs : getLogs(req, res)
+
+alt Filtering by user
+    ControllerLogs -> LogModel : find({ user: req.query.user }).populate("user", "name email tel role")
+    LogModel -> DB_Logs : Query logs by user ID
+    DB_Logs -> LogModel : Return filtered logs
+else Fetch all logs
+    ControllerLogs -> LogModel : find().populate("user", "name email tel role")
+    LogModel -> DB_Logs : Query all logs
+    DB_Logs -> LogModel : Return all logs
+end
+
+LogModel -> ControllerLogs : Return logs array
+
+ControllerLogs -> Server : Return 200 { success: true, count, data }
+Server -> Admin : Response 200 { success: true, count, data }
+
+alt Exception occurs
+    ControllerLogs -> Server : Return 500 { success: false, message: "Cannot find logs" }
+    Server -> Admin : Response 500 { success: false, message: "Cannot find logs" }
+end
+
+@enduml
