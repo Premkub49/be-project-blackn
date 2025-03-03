@@ -1,0 +1,57 @@
+@startuml Update Booking
+title Update Booking (PUT)
+
+actor User
+actor Admin
+participant "<<JavaScript>>\nServer" as Server
+participant "<<router>>\nBookings" as RouterBookings
+participant "<<middleware>>\nAuth" as Auth
+participant "<<model>>\nUser" as UserModel
+participant "<<controllers>>\nBookings" as ControllerBookings
+participant "<<model>>\nBooking" as BookingModel
+participant "<<model>>\nLog_Audit_Booking" as LogAuditModel
+database "<<MongoDB>>\nBookings" as DB_Bookings
+database "<<MongoDB>>\nUsers" as DB_Users
+database "<<MongoDB>>\nLog_Audit_Booking" as DB_Audits
+
+User -> Server : PUT api/v1/bookings/:id
+Admin -> Server : PUT api/v1/bookings/:id
+Server -> RouterBookings : router.use('api/v1/bookings/:id')
+RouterBookings -> Auth : protect(token)
+Auth -> UserModel : findById(decoded.id)
+UserModel -> DB_Users : Query user by ID
+DB_Users -> UserModel : Return user data
+UserModel -> Auth : Return user object
+Auth -> RouterBookings : next()
+
+RouterBookings -> BookingModel : findById(req.params.id)
+BookingModel -> DB_Bookings : Query booking by ID
+DB_Bookings -> BookingModel : Return booking data
+BookingModel -> RouterBookings : Return booking object
+
+alt Booking not found
+    RouterBookings -> User : 404 No booking with given ID
+    return
+    RouterBookings -> Admin : 404 No booking with given ID
+    return
+end
+
+alt User not authorized
+    RouterBookings -> User : 401 Unauthorized to update booking
+    return
+end
+
+RouterBookings -> BookingModel : findByIdAndUpdate(req.params.id, req.body)
+BookingModel -> DB_Bookings : Update booking data
+DB_Bookings -> BookingModel : Return updated booking
+BookingModel -> RouterBookings : Return updated booking object
+
+RouterBookings -> LogAuditModel : create LogAuditBooking
+LogAuditModel -> DB_Audits : Insert log audit entry
+DB_Audits -> LogAuditModel : Return audit log
+LogAuditModel -> RouterBookings : Log entry created
+
+RouterBookings -> User : 200 Booking updated successfully
+RouterBookings -> Admin : 200 Booking updated successfully
+
+@enduml
