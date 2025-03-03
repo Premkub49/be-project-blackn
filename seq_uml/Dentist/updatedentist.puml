@@ -1,0 +1,28 @@
+@startuml Update Dentist
+title Manage Dentist (UPDATE)
+
+actor Admin
+participant "<<JavaScript>>\nServer" as Server
+participant "<<router>>\nDentists" as RouterDentists
+participant "<<controllers>>\nDentists" as ControllerDentists
+participant "<<model>>\nDentist" as DentistModel
+database "<<MongoDB>>\nDentists" as DB_Dentists
+
+Admin -> Server : req.put('/api/v1/dentists/:id')
+Server -> RouterDentists : app.use('/api/v1/dentists')
+RouterDentists -> ControllerDentists : updateDentist(req, res)
+
+ControllerDentists -> DentistModel : findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
+DentistModel -> DB_Dentists : Query dentist by ID and update
+DB_Dentists -> DentistModel : Return updated dentist
+DentistModel -> ControllerDentists : Return updated dentist object
+
+alt Dentist found
+    ControllerDentists -> Server : Return success response (200, updated dentist)
+    Server -> Admin : Response (200, updated dentist)
+else Dentist not found
+    ControllerDentists -> Server : Return error response (400, success: false)
+    Server -> Admin : Response (400, success: false)
+end
+
+@enduml
