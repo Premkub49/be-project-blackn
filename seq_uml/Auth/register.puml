@@ -1,0 +1,31 @@
+@startuml register
+title User Registration Sequence Diagram
+
+actor User
+participant "<<JavaScript>>\nServer" as Server
+participant "<<router>>\nAuth" as RouterAuth
+participant "<<controllers>>\nAuth" as ControllerAuth
+participant "<<model>>\nUser" as UserModel
+participant "<<utils>>\nTokenService" as TokenService
+database "<<MongoDB>>\nUsers" as DB_Users
+
+User -> Server : POST /api/v1/auth/register
+Server -> RouterAuth : app.use('/api/v1/auth/register')
+RouterAuth -> ControllerAuth : register(req, res)
+
+ControllerAuth -> UserModel : create({ name, email, tel_number, password, role })
+UserModel -> DB_Users : Insert new user
+DB_Users -> UserModel : Return created user
+UserModel -> ControllerAuth : Return new user object
+
+ControllerAuth -> TokenService : sendTokenResponse(user, 200, res)
+TokenService -> Server : Return response with token
+
+Server -> User : Response 200 { success: true, token }
+
+alt Exception occurs
+    ControllerAuth -> Server : Return 400 { success: false }
+    Server -> User : Response 400 { success: false }
+end
+
+@enduml
