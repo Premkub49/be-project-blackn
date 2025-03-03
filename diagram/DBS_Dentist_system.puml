@@ -1,0 +1,19 @@
+@startuml DBS_Dentist_system Use Case Diagram
+left to right direction
+actor "User" as user
+rectangle "DBS Dentist System" as dbs{
+    usecase "Get all dentists" as getallDentists
+    usecase "Get a dentist by id" as getDentist
+    usecase "Create a new dentist" as createDentist
+    usecase "Update a dentist by id" as updateDentist
+    usecase "Delete a dentist by id" as deleteDentist
+}
+    user -- getallDentists
+    user -- getDentist
+actor "Admin" as admin
+    getallDentists -- admin
+    getDentist -- admin
+    createDentist -- admin
+    updateDentist -- admin
+    deleteDentist -- admin
+@enduml
