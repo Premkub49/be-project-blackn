@@ -1,0 +1,37 @@
+@startuml Get Booking by ID
+title Manage Booking (GET ONE)
+
+actor User
+actor Admin
+participant "<<JavaScript>>\n:server" as S
+participant "<<router>>\n:bookings" as R
+participant "<<controllers>>\n:bookings" as C
+participant "<<model>>\n:Booking" as M
+database "<<MongoDB>>\n:bookings" as DB
+
+User -> S: GET /api/v1/bookings/:id
+Admin -> S: GET /api/v1/bookings/:id
+S -> R: req.get('/api/v1/bookings/:id')
+R -> C: getBooking(req, res, next)
+C -> M: Booking.findById(req.params.id).populate("dentist")
+M -> DB: Query Booking by ID
+DB --> M: Return Booking Data
+M --> C: Booking Data
+
+alt Booking Found
+    C --> S: Return JSON Response (booking)
+    S --> User: response (200 OK, booking data)
+    S --> Admin: response (200 OK, booking data)
+else Booking Not Found
+    C --> S: Return 404 Error ("No booking with this ID")
+    S --> User: response (404 Not Found)
+    S --> Admin: response (404 Not Found)
+end
+
+alt Query Error
+    C --> S: Return 500 Error ("Cannot find Booking")
+    S --> User: response (500 Internal Server Error)
+    S --> Admin: response (500 Internal Server Error)
+end
+
+@enduml
