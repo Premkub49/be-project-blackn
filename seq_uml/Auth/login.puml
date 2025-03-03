@@ -1,0 +1,50 @@
+@startuml Login
+title User Login Sequence Diagram
+
+actor User
+participant "<<JavaScript>>\nServer" as Server
+participant "<<router>>\nAuth" as RouterAuth
+participant "<<controllers>>\nAuth" as ControllerAuth
+participant "<<model>>\nUser" as UserModel
+participant "<<utils>>\nTokenService" as TokenService
+database "<<MongoDB>>\nUsers" as DB_Users
+
+User -> Server : POST /api/v1/auth/login { email, password }
+Server -> RouterAuth : app.use('/api/v1/auth/login')
+RouterAuth -> ControllerAuth : login(req, res)
+
+alt Missing email or password
+    ControllerAuth -> Server : Return 400 { success: false, msg: "Please provide an email and password" }
+    Server -> User : Response 400 { success: false, msg: "Please provide an email and password" }
+end
+
+    ControllerAuth -> UserModel : findOne({ email }).select("+password")
+    UserModel -> DB_Users : Query user by email
+    DB_Users -> UserModel : Return user object (or null)
+    UserModel -> ControllerAuth : Return user object
+
+
+alt User not found
+    ControllerAuth -> Server : Return 400 { success: false, msg: "Invalid credentials" }
+    Server -> User : Response 400 { success: false, msg: "Invalid credentials" }
+end
+
+    ControllerAuth -> UserModel : matchPassword(password)
+    UserModel -> ControllerAuth : Return true/false
+
+alt Password does not match
+    ControllerAuth -> Server : Return 401 { success: false, msg: "Invalid credentials" }
+    Server -> User : Response 401 { success: false, msg: "Invalid credentials" }
+end
+
+alt Exception occurs
+    ControllerAuth -> Server : Return 500 { success: false, message: "Server error" }
+    Server -> User : Response 500 { success: false, message: "Server error" }
+end
+
+    ControllerAuth -> TokenService : sendTokenResponse(user, 200, res)
+    TokenService -> Server : Return response with token
+    Server -> User : Response 200 { success: true, token }
+
+
+@enduml
