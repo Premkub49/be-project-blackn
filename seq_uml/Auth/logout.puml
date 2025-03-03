@@ -1,0 +1,20 @@
+@startuml Logout
+title User Logout Sequence Diagram
+
+actor User
+participant "<<JavaScript>>\nServer" as Server
+participant "<<router>>\nAuth" as RouterAuth
+participant "<<controllers>>\nAuth" as ControllerAuth
+participant "<<utils>>\nCookieService" as CookieService
+
+User -> Server : GET /api/v1/auth/logout
+Server -> RouterAuth : app.use('/api/v1/auth/logout')
+RouterAuth -> ControllerAuth : logout(req, res)
+
+ControllerAuth -> CookieService : Clear authentication token
+CookieService -> Server : Set cookie "token" to empty value (expires immediately)
+
+' ControllerAuth -> Server : Return 200 { success: true, token: "" }
+Server -> User : Response 200 { success: true, token: "" }
+
+@enduml
