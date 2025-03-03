@@ -1,0 +1,19 @@
+@startuml DBS_Authentication_system Use Case Diagram
+left to right direction
+actor "User" as user
+rectangle "DBS Authentication System" as dbs{
+  usecase "Login" as login
+  usecase "Logout" as logout
+  usecase "Register" as register
+  usecase "Get Me" as getMe
+}
+    user -- login
+    user -- logout
+    user -- register
+    user -- getMe
+actor "Admin" as admin
+    login -- admin
+    logout -- admin
+    register -- admin
+    getMe -- admin
+@enduml
