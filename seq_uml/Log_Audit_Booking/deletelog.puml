@@ -1,0 +1,37 @@
+@startuml Delete Log
+title Delete Log Sequence Diagram
+
+actor Admin
+participant "<<JavaScript>>\nServer" as Server
+participant "<<router>>\nLog_Audit_Booking" as RouterLogs
+participant "<<controllers>>\nLog_Audit_Booking" as ControllerLogs
+participant "<<model>>\nLog_Audit_Booking" as LogModel
+database "<<MongoDB>>\nLog_Audit_Booking" as DB_Logs
+
+Admin -> Server : DELETE /api/v1/logs/:id
+Server -> RouterLogs : app.use('/api/v1/logs/:id')
+RouterLogs -> ControllerLogs : deleteLog(req, res)
+
+ControllerLogs -> LogModel : findById(req.params.id)
+LogModel -> DB_Logs : Query log by ID
+DB_Logs -> LogModel : Return log object (or null)
+LogModel -> ControllerLogs : Return log object
+
+alt Log not found
+    ControllerLogs -> Server : Return 404 { success: false, message: "No log with the given ID" }
+    Server -> Admin : Response 404 { success: false, message: "No log with the given ID" }
+end
+    ControllerLogs -> LogModel : remove()
+    LogModel -> DB_Logs : Delete log from database
+    DB_Logs -> LogModel : Log deleted
+
+    ControllerLogs -> Server : Return 200 { success: true, data: {} }
+    Server -> Admin : Response 200 { success: true, data: {} }
+
+
+alt Exception occurs
+    ControllerLogs -> Server : Return 500 { success: false, message: "Cannot delete log" }
+    Server -> Admin : Response 500 { success: false, message: "Cannot delete log" }
+end
+
+@enduml
