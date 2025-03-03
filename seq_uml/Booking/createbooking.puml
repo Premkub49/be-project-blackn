@@ -1,0 +1,69 @@
+@startuml Create Booking
+title Manage Booking (POST)
+
+actor User
+actor Admin
+participant "<<JavaScript>>\nServer" as Server
+participant "<<router>>\nBookings" as RouterBookings
+participant "<<middleware>>\nAuth" as Auth
+participant "<<model>>\nUser" as UserModel
+participant "<<controllers>>\nBookings" as ControllerBookings
+participant "<<model>>\nBooking" as BookingModel
+participant "<<model>>\nDentist" as DentistModel
+participant "<<model>>\nLogAuditBooking" as LogAuditModel
+database "<<MongoDB>>\nBookings" as DB_Bookings
+database "<<MongoDB>>\nDentists" as DB_Dentists
+database "<<MongoDB>>\nUsers" as DB_Users
+database "<<MongoDB>>\nLog_Audit_Booking" as DB_Audits
+
+User -> Server : POST api/v1/bookings
+Admin -> Server : POST api/v1/bookings
+Server -> RouterBookings : router.use('api/v1/bookings')
+RouterBookings -> Auth : protect(token)
+Auth -> UserModel : findById(decoded.id)
+UserModel -> DB_Users : Query user by ID
+DB_Users -> UserModel : Return user data
+UserModel -> Auth : Return user object
+Auth -> RouterBookings : next()
+
+' alt dentistId is provided
+'     RouterBookings -> Server : req.body.dentist = req.params.dentistId
+' end
+
+RouterBookings -> DentistModel : findById(req.body.dentist)
+DentistModel -> DB_Dentists : Query dentist by ID
+DB_Dentists -> DentistModel : Return dentist data
+DentistModel -> RouterBookings : Return dentist object
+
+alt Dentist not found
+    RouterBookings -> User : 404 No dentist with given ID
+    return
+    RouterBookings -> Admin : 404 No dentist with given ID
+    return
+end
+
+' RouterBookings -> Server : req.body.user = req.user.id
+RouterBookings -> BookingModel : find({ user: req.user.id })
+BookingModel -> DB_Bookings : Query bookings by user ID
+DB_Bookings -> BookingModel : Return booking list
+BookingModel -> RouterBookings : Return existing bookings
+
+alt User already has a booking and is not admin
+    RouterBookings -> User : 400 User already made a booking
+    return
+end
+
+RouterBookings -> BookingModel : create(req.body)
+BookingModel -> DB_Bookings : Insert new booking
+DB_Bookings -> BookingModel : Return new booking
+BookingModel -> RouterBookings : Return booking object
+
+RouterBookings -> LogAuditModel : create LogAuditBooking
+LogAuditModel -> DB_Audits : Insert log audit entry
+DB_Audits -> LogAuditModel : Return audit log
+LogAuditModel -> RouterBookings : Log entry created
+
+RouterBookings -> User : 200 Booking created successfully
+RouterBookings -> Admin : 200 Booking created successfully
+
+@enduml
