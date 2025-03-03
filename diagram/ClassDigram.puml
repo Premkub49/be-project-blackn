@@ -1,0 +1,102 @@
+@startuml Dentist Booking System (DBS)
+
+class "DBSService" as dbs <<Application>>
+class "Dentists" as dent1 <<Resource>> {
+   + <<GET>> getDentists(): Dentist
+   + <<POST>> createDentist(): Dentist
+}
+class "Dentist" as dent2 <<Resource>> {
+   + <<GET>> getDentist(): Dentist
+   + <<PUT>> updateDentist(): Dentist
+   + <<DELETE>> deleteDentist(): Dentist
+}
+class "Dentist" as dent3 <<Representation>> {
+   - name
+   - year_of_experience
+   - area_of_expertise
+}
+class "Booking" as bk4 <<Representation>> {
+   - bookingDate
+   - user
+   - dentist
+   - createAt
+}
+
+class "Auth" as auth <<Resource>>
+class "Register" as reg <<Resource>> {
+   +<<POST>> registerUser(): User
+}
+class "Login" as login <<Resource>> {
+   +<<POST>> loginUser(): User
+}
+class "Get Me" as me <<Resource>> {
+   +<<GET>> getMe(): User
+}
+class "Logout" as logout <<Resource>> {
+   +<<GET>> logoutUser(): User
+}
+class "User" as user <<Representation>> {
+   - name
+   - tel_number
+   - email
+   - password
+   - role
+}
+
+class "Bookings" as bk2 <<Resource>> {
+   +<<GET>> getBookings(): Booking
+   +<<POST>> addBooking(): Booking
+}
+class "Booking" as bk3 <<Resource>> {
+   +<<GET>> getBooking(): Booking
+   +<<PUT>> updateBooking(): Booking
+   +<<DELETE>> deleteBooking(): Booking
+}
+
+class "Log_Audit_Booking" as log1 <<Representation>> {
+   - user
+   - booking
+   - actionType
+   - createAt
+}
+class "Log_Audit_Booking" as log2 <<Resource>> {
+   +<<GET>> getLogs(): Log_Audit_Booking
+}
+class "Log_Audit_Booking" as log3 <<Resource>> {
+   +<<GET>> getLog(): Log_Audit_Booking
+   +<<DELETE>> deleteLog(): Log_Audit_Booking
+}
+
+dbs --> dent1: /dentist\n<<Path>>
+dent1 --> dent2: /:dentistId\n<<Paht>>
+dent1 --> dent3: <<Use>>
+dent1 --> bk4: <<Use>>
+dent2 --> dent3: <<Use>>
+dent2 --> bk2: /bookings\n<<Path>>
+
+dbs --> auth: /auth\n<<Path>>
+auth --> reg: /register\n<<Path>>
+auth --> login: /login\n<<Path>>
+auth --> me: /me\n<<Path>>
+auth --> logout: /logout\n<<Path>>
+reg --> user: <<Use>>
+login --> user: <<Use>>
+me --> user: <<Use>>
+logout --> user: <<Use>>
+
+dbs --> bk2: /bookings\n<<Path>>
+bk2 --> bk3: /:bookingId\n<<Path>>
+bk2 --> bk4: <<Use>>
+bk3 --> bk4: <<Use>>
+bk3 --> dent3: <<Use>>
+bk2 --> log1: <<Use>>
+bk2 --> dent3: <<Use>>
+bk3 --> log1: <<Use>>
+
+dbs --> log2: /logs\n<<Path>>
+log2 --> log1: <<Use>>
+log2 --> user: <<Use>>
+log2 --> log3: /:logId\n<<Path>>
+log3 --> log1: <<Use>>
+
+@enduml
