@@ -1,0 +1,23 @@
+@startuml Create Dentist
+title Manage Dentist (CREATE)
+
+actor Admin
+participant "<<JavaScript>>\nServer" as Server
+participant "<<router>>\nDentists" as RouterDentists
+participant "<<controllers>>\nDentists" as ControllerDentists
+participant "<<model>>\nDentist" as DentistModel
+database "<<MongoDB>>\nDentists" as DB_Dentists
+
+Admin -> Server : req.post('/api/v1/dentists')
+Server -> RouterDentists : app.use('/api/v1/dentists')
+RouterDentists -> ControllerDentists : createDentist(req, res)
+
+ControllerDentists -> DentistModel : create(req.body)
+DentistModel -> DB_Dentists : Insert new dentist into database
+DB_Dentists -> DentistModel : Return created dentist
+DentistModel -> ControllerDentists : Return new dentist object
+
+ControllerDentists -> Server : Return success response (201, dentist)
+Server -> Admin : Response (201, dentist)
+
+@enduml
