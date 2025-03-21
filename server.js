@@ -37,10 +37,21 @@ app.use("/api/v1/bookings", bookings);
 app.use("/api/v1/auth", auth);
 app.use("/api/v1/logs", logs);
 const PORT = process.env.PORT || 5000;
-app.listen(
-  PORT,
-  console.log("Server running in ", process.env.NODE_ENV, " mode on port", PORT)
-);
+if (process.env.NODE_ENV == "deployment") {
+  module.exports = (req, res) => {
+    app(req, res);
+  };
+} else if (process.env.NODE_ENV == "development") {
+  app.listen(
+    PORT,
+    console.log(
+      "Server running in ",
+      process.env.NODE_ENV,
+      " mode on port",
+      PORT
+    )
+  );
+}
 
 process.on("unhandleRejection", (err, promise) => {
   console.log(`Error: ${err.message}`);
