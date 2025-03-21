@@ -38,9 +38,7 @@ app.use("/api/v1/auth", auth);
 app.use("/api/v1/logs", logs);
 const PORT = process.env.PORT || 5000;
 if (process.env.NODE_ENV == "deployment") {
-  module.exports = (req, res) => {
-    app(req, res);
-  };
+  module.exports = app;
 } else if (process.env.NODE_ENV == "development") {
   app.listen(
     PORT,
@@ -53,7 +51,7 @@ if (process.env.NODE_ENV == "deployment") {
   );
 }
 
-process.on("unhandleRejection", (err, promise) => {
-  console.log(`Error: ${err.message}`);
-  server.close(() => process.exit(1));
-});
+// process.on("unhandleRejection", (err, promise) => {
+//   console.log(`Error: ${err.message}`);
+//   server.close(() => process.exit(1));
+// });
