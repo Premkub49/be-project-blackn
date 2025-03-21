@@ -51,7 +51,7 @@ if (process.env.NODE_ENV == "deployment") {
   );
 }
 
-// process.on("unhandleRejection", (err, promise) => {
-//   console.log(`Error: ${err.message}`);
-//   server.close(() => process.exit(1));
-// });
+process.on("unhandleRejection", (err, promise) => {
+  console.log(`Error: ${err.message}`);
+  server.close(() => process.exit(1));
+});
