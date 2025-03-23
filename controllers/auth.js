@@ -1,5 +1,29 @@
 const User = require("../models/User");
 
+const errMongoChecker = (err) => {
+  if (err.code === 11000) {
+    return "Email Already Exists";
+  } else if (err.name === "ValidationError") {
+    if (err.errors.password) {
+      return "Password must be at least 6 characters";
+    }
+    if (err.errors.tel_number) {
+      return "Invalid Tel Number";
+    }
+    if (err.errors.email) {
+      return "Invalid Email";
+    }
+    if (err.errors.name) {
+      return "Invalid Name";
+    }
+    return "Invalid Data";
+  } else if (err.name === "CastError") {
+    return "Invalid Id";
+  } else {
+    return "Error";
+  }
+};
+
 exports.register = async (req, res, next) => {
   try {
     const { name, email, tel_number, password, role } = req.body;
@@ -12,7 +36,8 @@ exports.register = async (req, res, next) => {
     });
     sendTokenResponse(user, 200, res);
   } catch (err) {
-    res.status(400).json({ success: false, massage: err.stack });
+    const massage = errMongoChecker(err);
+    res.status(400).json({ success: false, msg: massage });
     console.log(err.stack);
   }
 };
