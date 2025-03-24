@@ -24,11 +24,11 @@ app.use(cookieParser());
 app.use(mongoSanitize());
 app.use(helmet());
 app.use(xss());
-const limiter = rateLimit({
-  windowMs: 10 * 60 * 1000,
-  max: 500,
-});
-app.use(limiter);
+// const limiter = rateLimit({
+//   windowMs: 10 * 60 * 1000,
+//   max: 500,
+// });
+// app.use(limiter);
 app.use(hpp());
 app.options("*", cors());
 app.use(cors());
