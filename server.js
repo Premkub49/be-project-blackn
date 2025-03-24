@@ -30,6 +30,7 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 app.use(hpp());
+app.options("*", cors());
 app.use(cors());
 
 app.use(`/api/v1/dentists`, dentists);
