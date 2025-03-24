@@ -13,6 +13,13 @@ exports.getDentists = async (req, res, next) => {
       (match) => `$${match}`
     );
     query = Dentist.find(JSON.parse(queryStr)).populate(`bookings`);
+    if (req.query.area) {
+      const fields = req.query.area.split(",").join(" ");
+      // console.log(fields);
+      query = query.find({
+        area_of_expertise: fields,
+      });
+    }
     if (req.query.select) {
       const fields = req.query.select.split(",").join(" ");
       query = query.select(fields);
