@@ -85,7 +85,12 @@ exports.getAllAreaDentists = async (req, res, next) => {
         area_of_expertise: 1,
       })
       .distinct("area_of_expertise");
-    console.log(area_of_expertise);
+    // console.log(area_of_expertise);
+    if (!area_of_expertise) {
+      return res
+        .status(404)
+        .json({ success: false, message: `No area of expertise found` });
+    }
     const total = area_of_expertise.length;
 
     res
