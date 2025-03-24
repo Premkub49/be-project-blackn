@@ -6,18 +6,19 @@ exports.getDentists = async (req, res, next) => {
     const reqQuery = { ...req.query };
     const removeFields = ["select", "sort", "page", "limit"];
     removeFields.forEach((param) => delete reqQuery[param]);
-    console.log(reqQuery);
+    //console.log(reqQuery);
     let queryStr = JSON.stringify(req.query);
     queryStr = queryStr.replace(
       /\b(gt|gte|lt|lte|in)\b/g,
       (match) => `$${match}`
     );
+    console.log(queryStr);
     query = Dentist.find(JSON.parse(queryStr)).populate(`bookings`);
     if (req.query.area) {
-      const fields = req.query.area.split(",").join(" ");
-      // console.log(fields);
+      let fields = req.query.area.split(",");
+      console.log(fields);
       query = query.find({
-        area_of_expertise: fields,
+        area_of_expertise: { $in: fields },
       });
     }
     if (req.query.select) {
@@ -75,6 +76,25 @@ exports.getDentist = async (req, res, next) => {
     res.status(400).json({ success: false });
   }
 };
+
+// exports.getAllAreaDentists = async (req, res, next) => {
+//   try {
+//     console.log("test");
+//     const area_of_expertise = await Dentist.select({
+//       _id: 0,
+//       area_of_expertise: 1,
+//     });
+//     console.log(area_of_expertise);
+//     const total = area_of_expertise.length;
+
+//     res
+//       .status(200)
+//       .json({ success: true, count: total, data: area_of_expertise });
+//   } catch (err) {
+//     res.status(400).json({ success: false });
+//   }
+// };
+
 exports.createDentist = async (req, res, next) => {
   const dentist = await Dentist.create(req.body);
   res.status(201).json({ success: true, data: dentist });
