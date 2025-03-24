@@ -15,7 +15,7 @@ router
   .route("/")
   .get(getDentists)
   .post(protect, authorize("admin"), createDentist);
-router.route("/area").get(getAllAreaDentists);
+router.route("/area_of_expertise").get(getAllAreaDentists);
 router
   .route("/:id(\\d+)")
   .get(getDentist)

@@ -14,8 +14,8 @@ exports.getDentists = async (req, res, next) => {
     );
     console.log(queryStr);
     query = Dentist.find(JSON.parse(queryStr)).populate(`bookings`);
-    if (req.query.area) {
-      let fields = req.query.area.split(",");
+    if (req.query.area_of_expertise) {
+      let fields = req.query.area_of_expertise.split(",");
       console.log(fields);
       query = query.find({
         area_of_expertise: { $in: fields },
