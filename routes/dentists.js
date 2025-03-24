@@ -5,6 +5,7 @@ const {
   createDentist,
   updateDentist,
   deleteDentist,
+  getAllAreaDentists,
 } = require("../controllers/dentists.js");
 const bookingRouter = require("./bookings");
 const router = express.Router();
@@ -14,10 +15,10 @@ router
   .route("/")
   .get(getDentists)
   .post(protect, authorize("admin"), createDentist);
+router.route("/area").get(getAllAreaDentists);
 router
-  .route("/:id")
+  .route("/:id(\\d+)")
   .get(getDentist)
   .put(protect, authorize("admin"), updateDentist)
   .delete(protect, authorize("admin"), deleteDentist);
-
 module.exports = router;

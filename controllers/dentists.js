@@ -77,23 +77,25 @@ exports.getDentist = async (req, res, next) => {
   }
 };
 
-// exports.getAllAreaDentists = async (req, res, next) => {
-//   try {
-//     console.log("test");
-//     const area_of_expertise = await Dentist.select({
-//       _id: 0,
-//       area_of_expertise: 1,
-//     });
-//     console.log(area_of_expertise);
-//     const total = area_of_expertise.length;
+exports.getAllAreaDentists = async (req, res, next) => {
+  try {
+    const area_of_expertise = await Dentist.find()
+      .select({
+        _id: 0,
+        area_of_expertise: 1,
+      })
+      .distinct("area_of_expertise");
+    console.log(area_of_expertise);
+    const total = area_of_expertise.length;
 
-//     res
-//       .status(200)
-//       .json({ success: true, count: total, data: area_of_expertise });
-//   } catch (err) {
-//     res.status(400).json({ success: false });
-//   }
-// };
+    res
+      .status(200)
+      .json({ success: true, count: total, data: area_of_expertise });
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({ success: false });
+  }
+};
 
 exports.createDentist = async (req, res, next) => {
   const dentist = await Dentist.create(req.body);
