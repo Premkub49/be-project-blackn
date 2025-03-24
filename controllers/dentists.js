@@ -36,7 +36,7 @@ exports.getDentists = async (req, res, next) => {
     const limit = parseInt(req.query.limit, 10) || 25;
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
-    const total = await Dentist.countDocuments();
+    const total = await query.clone().countDocuments();
     query = query.skip(startIndex).limit(limit);
     const dentists = await query;
     const pagination = {};
@@ -60,6 +60,7 @@ exports.getDentists = async (req, res, next) => {
       data: dentists,
     });
   } catch (err) {
+    console.log(err);
     res.status(400).json({ success: false });
   }
 };
